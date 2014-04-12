@@ -67,9 +67,6 @@
 #define damageversion "13D"
 #include <SPC>
 
-/* cosmy's Colored Console plugin */
-#include <cuf>
-
 /* Slice's TimerFix */
 #include <timerfix>
 
@@ -83,9 +80,8 @@
 
 main()
 {
-	//SetConsoleTextColors(CONSOLE_GREY);
 	print("\n---------------------------------------------");
-	printc(CONSOLE_LIGHTBLUE, "Monolith RP (Public Release) by Scaleta!");
+	print("Monolith RP (Public Release) by Scaleta!");
 	print("---------------------------------------------\n");
 }
 

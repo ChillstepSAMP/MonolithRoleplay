@@ -317,12 +317,12 @@ DropPlayerMoney(playerid) {
 		MoneyPacket[id][mTimer] = gettime()+3; // allow for player to walk off the cash so he doesn't insta pick it back up.
 		MoneyPacket[id][mLifeSpan] = gettime()+120; // 120 second life-span before being destroyed.
 		#if defined MRP_DEBUG
-			printfc(CONSOLE_YELLOW, "[DEBUG] ID: %i, ID: %i, Amt:%s, Time: %i, Span: %i", id, MoneyPacket[id][mID], NumFormat(MoneyPacket[id][mCash]), MoneyPacket[id][mTimer], MoneyPacket[id][mLifeSpan]);
+			printf("[DEBUG] ID: %i, ID: %i, Amt:%s, Time: %i, Span: %i", id, MoneyPacket[id][mID], NumFormat(MoneyPacket[id][mCash]), MoneyPacket[id][mTimer], MoneyPacket[id][mLifeSpan]);
 		#endif
 		GivePlayerMoneyEx(playerid, -amount);
 	}
 	else {
-		printfc(CONSOLE_RED, "Attempted to drop %i for Player %s but failed!", amount, GetPlayerNameEx(playerid, 1));
+		printf("Attempted to drop %i for Player %s but failed!", amount, GetPlayerNameEx(playerid, 1));
 	}
 	return 1;
 }
@@ -377,7 +377,7 @@ ResetMoneyBar(playerid) {
 OnLoadATMs() {
 	format(query, sizeof(query), "SELECT * FROM `sys_atms`");
 	mysql_function_query(gSQLHandle, query, false, "LoadATMs", "");
-	printc(CONSOLE_YELLOW, "[DEBUG] Loading ATMs...");
+	print("[DEBUG] Loading ATMs...");
 	return 1;
 }
 
@@ -411,7 +411,7 @@ OnLoadDoors()
 {
 	format(query, sizeof(query), "SELECT * FROM `sys_doors`");
 	mysql_function_query(gSQLHandle, query, false, "LoadDoors", "");
-	printc(CONSOLE_YELLOW, "[DEBUG] Loading Doors...");
+	print("[DEBUG] Loading Doors...");
 	return 1;
 }
 
@@ -554,8 +554,8 @@ UpdateDoorLabel(i, moved = 0)
 	else {
 		DestroyDynamicPickup(DoorInfo[i][dPickup]);
 		DestroyDynamic3DTextLabel(dLabels[i]);
-		dLabels[i] = CreateDynamic3DTextLabel(text, 0xDAA520FF, DoorInfo[i][dExteriorX], DoorInfo[i][dExteriorY], DoorInfo[i][dExteriorZ]+0.7, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, DoorInfo[i][dVWx], DoorInfo[i][dIntx], -1, 10.0);
-		DoorInfo[i][dPickup] = CreateDynamicPickup(1318, 1, DoorInfo[i][dExteriorX], DoorInfo[i][dExteriorY], DoorInfo[i][dExteriorZ]);
+		dLabels[i] = CreateDynamic3DTextLabel(text, 0xDAA520FF, DoorInfo[i][dExteriorX], DoorInfo[i][dExteriorY], DoorInfo[i][dExteriorZ]+0.1, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, DoorInfo[i][dVWx], DoorInfo[i][dIntx], -1, 10.0);
+		DoorInfo[i][dPickup] = CreateDynamicPickup(1239, 1, DoorInfo[i][dExteriorX], DoorInfo[i][dExteriorY], DoorInfo[i][dExteriorZ]);
 	}
 	return 1;
 }
@@ -748,19 +748,6 @@ GetVehicleDriver(vehicleid)
 	    if (GetPlayerVehicleID(i) == vehicleid && GetPlayerState(i) == PLAYER_STATE_DRIVER) return i;
 	}
 	return INVALID_PLAYER_ID;
-}
-
-/* cosmy's did not work, so I made one */
-printfc(color, const message[], va_args<>)
-{
-	g_console_colors = GetConsoleTextColors();
-	SetConsoleTextColors(color);
-
-	va_format(va_str, sizeof(va_str), message, va_start<2>);
-    printf(va_str);
-    
-    SetConsoleTextColors(g_console_colors);
-    return 1;
 }
 
 CreateServerTextDraws()

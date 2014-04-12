@@ -140,7 +140,7 @@ public OnPlayerDisconnect(playerid, reason)
 public OnPlayerSpawn(playerid)
 {
 	if(IsPlayerNPC(playerid)) {	
-		new string[12];
+		new string[24+6];
 		format(string, sizeof(string), "%s (%i)", GetPlayerNameEx(playerid, 1), playerid);
 		PlayerInfo[playerid][nameTag] = 
 			CreateDynamic3DTextLabel(string, COLOR_WHITE, 2795.61, -2462.44, 13.19+0.1, 10.0, playerid, INVALID_VEHICLE_ID, 0, 0, 0, -1, 10.0);
@@ -151,7 +151,7 @@ public OnPlayerSpawn(playerid)
 			SetPlayerFacingAngle(playerid, 360);
 			npcFrank = playerid;
 			#if defined MRP_DEBUG 
-				printc(CONSOLE_YELLOW, "[DEBUG] Frank's on stage.");
+				print("[DEBUG] Frank's on stage.");
 			#endif
 		}
 		else if(strcmpEx(GetPlayerNameEx(playerid), "Julio")) {
@@ -299,7 +299,7 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 		if(GetVehicleModel(PlayerInfo[playerid][uLastVeh]) == 449) {
 			SetCameraBehindPlayer(playerid);
 			#if defined MRP_DEBUG 
-				printfc(CONSOLE_YELLOW, "[DEBUG] Called : %i, %i, %i", playerid, newstate, oldstate);
+				print("[DEBUG] Called : %i, %i, %i", playerid, newstate, oldstate);
 			#endif
 		}
 	}
@@ -1075,7 +1075,7 @@ public RegisterAccount(playerid)
 	{
 		PlayerInfo[playerid][pUserID] = mysql_insert_id(gSQLHandle); // -- only works after it is inserted, as I found out.
 		#if defined MRP_DEBUG 
-			printfc(CONSOLE_YELLOW, "[DEBUG] Registered Account %s, ID:%d", GetPlayerNameEx(playerid), PlayerInfo[playerid][pUserID]);
+			printf("[DEBUG] Registered Account %s, ID:%d", GetPlayerNameEx(playerid), PlayerInfo[playerid][pUserID]);
 		#endif
 		PlayerInfo[playerid][pHealth] = 100;
 		SetSpawnInfo(playerid, 0, 299, 1772.34, -1945.99, 13.55, 0, -1, -1, -1, -1, -1, -1);
@@ -1133,7 +1133,7 @@ public p_AchievementHandler(playerid, type)
 			cache_get_field_content(0, "AchievementFirstFaction", fetch, gSQLHandle, MAX_INT);
 			PlayerInfo[playerid][pAchievementFirstFaction] = strval(fetch);
 			#if defined MRP_DEBUG
-				printfc(CONSOLE_GREEN, "Loaded %s's Achievements from the database.", GetPlayerNameEx(playerid));
+				print("Loaded %s's Achievements from the database.", GetPlayerNameEx(playerid));
 			#endif
 	    }
 	    else {
@@ -1149,7 +1149,7 @@ public p_AchievementHandler(playerid, type)
 		PlayerInfo[playerid][pAchievementFirstHouse] = 0;
 		PlayerInfo[playerid][pAchievementFirstFaction] = 0;
 		#if defined MRP_DEBUG
-				printfc(CONSOLE_GREEN, "Added %s's Achievements into the database.", GetPlayerNameEx(playerid));
+				printf("Added %s's Achievements into the database.", GetPlayerNameEx(playerid));
 		#endif
   	}
     return 1;
@@ -1457,7 +1457,7 @@ public LoadATMs()
 
 public OnSaveATM(i) 
 {
-	return (!mysql_affected_rows(gSQLHandle)) ? printfc(CONSOLE_RED, "[DEBUG] Failed to affect rows for ATM ID %i.", i) : (1);
+	return (!mysql_affected_rows(gSQLHandle)) ? printf("[DEBUG] Failed to affect rows for ATM ID %i.", i) : (1);
 }
 
 public LoadDoors() 
@@ -1536,15 +1536,16 @@ public LoadDoors()
 					format(text, sizeof(text), "%s\nStatus:" COL_GREEN " Open\n" COL_GOLDENROD "Owner: " COL_WHITE "%s\n" COL_GOLDENROD "ID: " COL_WHITE "%i", DoorInfo[i][dName], DoorInfo[i][dOwner], i);
 				}
 			}
-			dLabels[i] = CreateDynamic3DTextLabel(text, 0xDAA520FF, xa, ya, za+0.7, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, DoorInfo[i][dVWx], DoorInfo[i][dIntx], -1, 10.0);
-			DoorInfo[i][dPickup] = CreateDynamicPickup(1318, 1, xa, ya, za);
+			dLabels[i] = CreateDynamic3DTextLabel(text, 0xDAA520FF, xa, ya, za+0.1, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, DoorInfo[i][dVWx], DoorInfo[i][dIntx], -1, 10.0);
+			DoorInfo[i][dPickup] = CreateDynamicPickup(1239, 1, xa, ya, za);
 		}
     }
 }
 
 public OnSaveDoor(i) 
 {
-	return (!mysql_affected_rows(gSQLHandle)) ? printfc(CONSOLE_RED, "[DEBUG] Failed to affect rows for Door ID %i", i) : (1);
+	// this can be an error or just a warning (as if, the door info didn't change, nothing updated)
+	return (!mysql_affected_rows(gSQLHandle)) ? printf("[DEBUG] Warning: Failed to affect rows for Door ID %i", i) : (1);
 }
 
 public Freeze_Handler(playerid, type)
