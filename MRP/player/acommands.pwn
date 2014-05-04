@@ -371,7 +371,7 @@ CMD:createatm(playerid, params[])
 			SaveATM(id);
 		}
 		else {
-			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/createatm <money> <range (optional (deft: 3))> <disabled (optional(deft: 0))>");
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/createatm <money> <range (deft: 3)> <disabled (deft: 0)>");
 		}
 	}
 	else {
@@ -385,6 +385,44 @@ CMD:editatm(playerid, params[])
 	new id, option[64], value;
 	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
 		if(!sscanf(params, "is[64]I(-1)", id, option, value)) {
+
+			if(strcmpEx(option, "position")) {
+				new Float:pos[3];
+				GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+				ATMInfo[id][aPosX] = pos[0];
+				ATMInfo[id][aPosY] = pos[1];
+				ATMInfo[id][aPosZ] = pos[2];
+			}
+			else if(strcmpEx(option, "money")) {
+				if(value != -1) {
+					ATMInfo[id][aMoney] = value;
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Please enter a value for the option.");
+				}
+			}
+			else if(strcmpEx(option, "range")) {
+				if(value != -1) {
+					ATMInfo[id][aRange] = value;
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Please enter a value for the option.");
+				}
+			}
+			else if(strcmpEx(option, "disabled")) {
+				if(value != -1) {
+					ATMInfo[id][aDisabled] = value;
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Please enter a value for the option.");
+				}
+			}
+			else {
+				SendClientMessageEx(playerid, COLOR_GREY, "Invalid option chosen.");
+				return 1;
+			}
+			SendClientMessageEx(playerid, COLOR_GREY, "You have edited the %s", option);
+			Log("ATMEdit.log", "%s has edited %s (Optional:%d) for ATM ID: %d", GetPlayerNameEx(playerid,1), option, value, id);
 			UpdateATMLabel(id, 1);
 		}
 		else {

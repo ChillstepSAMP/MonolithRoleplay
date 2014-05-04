@@ -71,7 +71,7 @@
 
 #define _Alpha
 #define MRP_DEBUG
-#define VERSION	"v0.008-alpha"
+#define VERSION	"v0.9-alpha"
 
 /* Performance related */
 #undef MAX_PLAYERS
