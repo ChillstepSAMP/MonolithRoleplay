@@ -168,9 +168,10 @@ BeginSaveUser(playerid)
 	`AchievementPoints`=%d,\
 	`GPS`=%d,\
 	`TotalPay`=%d,\
-	`Bills`=%d WHERE `UserID` = %d",
+	`Bills`=%d,\
+	`HouseKey1`=%d WHERE `UserID` = %d",
 		i[pVIP], i[pAccent], i[pACBanned], i[pAchievementPoints],
-		i[pGPS], i[pTotalPay], i[pBills], i[pUserID]);
+		i[pGPS], i[pTotalPay], i[pBills], i[pHouseKey1], i[pUserID]);
 	mysql_function_query(gSQLHandle, query, false, "SaveUserAccount", "ii", playerid, 3);
 	#undef i
 	return 1;
@@ -216,9 +217,9 @@ TextIPCheck(playerid, text[])
 	for(new i = 0, j = strlen(text); i < j; i++) {
 		if(text[i] == '.') 
 			dots++;
-		if(text[i] == '_')
+		else if(text[i] == '_')
 			underscores++;
-		if(isNum(text[i]))
+		else if(isNum(text[i]))
 			nums++;
 	}
 	
@@ -484,7 +485,21 @@ EnterExitFunc(playerid, id, status, type)
 				//defer Freeze_Handler(playerid);
 			}
 			case TYPE_GARAGE: {}
-			case TYPE_HOUSE: {}
+			case TYPE_HOUSE: {
+
+				if(HouseInfo[id][houseLock] == 1) {
+					ShowPlayerMessage(playerid, "~r~Locked", 3);
+					return 1;
+				}
+
+				SetPlayerInterior(playerid, HouseInfo[id][houseInterior]);
+				SetPlayerVirtualWorld(playerid, HouseInfo[id][houseVirtualWorld]);
+				SetPlayerPosEx(playerid, HouseInfo[id][houseInt][0], HouseInfo[id][houseInt][1], HouseInfo[id][houseInt][2]);
+				SetPlayerFacingAngle(playerid, HouseInfo[id][houseInt][3]);
+				GameTextForPlayer(playerid, "~r~Loading...", 4000, 1);
+				TogglePlayerControllable(playerid, 0);
+				SetTimerEx("Freeze_Handler", 5000, false, "i", playerid);
+			}
 			case TYPE_BUSINESS: {}
 			case TYPE_BANK: {}
 		}
@@ -506,7 +521,15 @@ EnterExitFunc(playerid, id, status, type)
 				//defer Freeze_Handler(playerid);
 			}
 			case TYPE_GARAGE: {}
-			case TYPE_HOUSE: {}
+			case TYPE_HOUSE: {
+				SetPlayerInterior(playerid, 0);
+				SetPlayerVirtualWorld(playerid, 0);
+				SetPlayerPosEx(playerid, HouseInfo[id][houseExt][0], HouseInfo[id][houseExt][1], HouseInfo[id][houseExt][2]);
+				SetPlayerFacingAngle(playerid, HouseInfo[id][houseExt][3]);
+				GameTextForPlayer(playerid, "~r~Loading...", 4000, 1);
+				TogglePlayerControllable(playerid, 0);
+				SetTimerEx("Freeze_Handler", 5000, false, "i", playerid);
+			}
 			case TYPE_BUSINESS: {}
 			case TYPE_BANK: {}
 		}
@@ -909,4 +932,97 @@ SavePlayerAchievements(playerid)
 	);
 	mysql_function_query(gSQLHandle, query, false, "FinishQuery", "");
 	return 1;
+}
+
+UpdateHouseLabel(i, reset=0)
+{
+	new string[128];
+	if(strcmpEx(HouseInfo[i][houseOwner], "None")) {
+		format(string, sizeof(string), "House ID: %d\nFor Sale!\nCost: %d\nLevel: %d", 
+			i,
+			HouseInfo[i][houseCost],
+			HouseInfo[i][houseLevel]
+		);
+	}	
+	else {
+		format(string, sizeof(string), "House ID: %d\nOwner: %s\nLevel: %d",
+			i,
+			HouseInfo[i][houseOwner],
+			HouseInfo[i][houseLevel]
+		);
+	}
+	
+	if(!reset) {
+		UpdateDynamic3DTextLabelText(HouseInfo[i][houseLabel], COLOR_GREEN, string);
+	}
+	else {
+		DestroyDynamicPickup(HouseInfo[i][houseIcon]);
+		DestroyDynamic3DTextLabel(HouseInfo[i][houseLabel]);
+		HouseInfo[i][houseLabel] = CreateDynamic3DTextLabel(string, COLOR_GREEN, HouseInfo[i][houseExt][0], HouseInfo[i][houseExt][1]+0.1, HouseInfo[i][houseExt][2], 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, /* vw */ 0, /* int */ 0, -1, 10.0);
+		HouseInfo[i][houseIcon] = CreateDynamicPickup(1273, 1, HouseInfo[i][houseExt][0], HouseInfo[i][houseExt][1], HouseInfo[i][houseExt][2]);
+	}
+	return 1;
+}
+
+SaveHouse(i) 
+{
+	#define h[%0] HouseInfo[i][%0]
+	format(query, sizeof(query), "UPDATE `houses` SET `houseOwner`='%s',\
+		`houseExtX`=%.2f,\
+		`houseExtY`=%.2f,\
+		`houseExtZ`=%.2f,\
+		`houseExtA`=%.2f,\
+		`houseIntX`=%.2f,\
+		`houseIntY`=%.2f,\
+		`houseIntZ`=%.2f,\
+		`houseIntA`=%.2f,\
+		`houseInterior`=%d,\
+		`houseVirtualWorld`=%d,\
+		`houseCost`=%d,\
+		`houseBill`=%d,\
+		`houseVacant`=%d,\
+		`houseLock`=%d,\
+		`houseLevel`=%d WHERE `houseID`=%d",
+		h[houseOwner],
+		h[houseExt][0],
+		h[houseExt][1],
+		h[houseExt][2],
+		h[houseExt][3],
+		h[houseInt][0],
+		h[houseInt][1],
+		h[houseInt][2],
+		h[houseInt][3],
+		h[houseInterior],
+		h[houseVirtualWorld],
+		h[houseCost],
+		h[houseBill],
+		h[houseVacant],
+		h[houseLock],
+		h[houseLevel],
+		h[houseID]
+	);
+	mysql_function_query(gSQLHandle, query, false, "FinishQuery", "");
+
+	format(query, sizeof(query), "UPDATE `houses` SET `houseStorage1`=%d,\
+		`houseStorage2`=%d,\
+		`houseStorage3`=%d,\
+		`houseStorage4`=%d,\
+		`houseStorage5`=%d,\
+		`houseStorage6`=%d,\
+		`houseStorage7`=%d,\
+		`houseStorage8`=%d WHERE `houseID`=%d",
+		h[houseStorage][0],
+		h[houseStorage][1],
+		h[houseStorage][2],
+		h[houseStorage][3],
+		h[houseStorage][4],
+		h[houseStorage][5],
+		h[houseStorage][6],
+		h[houseStorage][7],
+		h[houseID]
+	);
+	mysql_function_query(gSQLHandle, query, false, "FinishQuery", "");
+	
+	return 1;
+	#undef h
 }

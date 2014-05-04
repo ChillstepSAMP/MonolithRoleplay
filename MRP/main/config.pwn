@@ -25,9 +25,9 @@
 */
 
 // DEFINITIONS //
-#define SQL_SERVER 	"localhost"
-#define SQL_USER	"root"
-#define SQL_DB		"test"
+#define SQL_SERVER 	"host"
+#define SQL_USER	"user"
+#define SQL_DB		"mrp"
 #define SQL_PASS	""
 #define SQL_DEBUG	1 // 0 - disable , 1 - enable MySQL debug.
 /* Max Sizes */
@@ -75,6 +75,7 @@ forward LoadHelpInfos();
 forward CallShowAgain(playerid, text[], time);
 forward p_AchievementHandler(playerid, type);
 forward LoadTowers();
+forward LoadHouses();
 
 forward FinishQuery();
 public FinishQuery() return 1;
@@ -82,8 +83,8 @@ public FinishQuery() return 1;
 //forward Float:GetDistanceBetweenPoints(Float:x, Float:y, Float:z, Float:xa, Float:ya, Float:za);
 
 // SERVER_CONFIG //
-//svar server_config_pass;
-new server_config_pass;
+// new server_config_pass;
+// It is now the GVar 'serv_conf_pass'
 
 // DIALOGS // 
 
@@ -128,6 +129,7 @@ new server_config_pass;
 #define MAX_TREES				25
 #define MAX_INFOS               35
 #define MAX_TOWERS              15
+#define MAX_HOUSES              500
 
 // TYPES // 
 #define TYPE_DOOR				1

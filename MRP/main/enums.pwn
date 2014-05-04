@@ -58,6 +58,7 @@ enum pInfo {
 	pGPS,
 	pTotalPay,
 	pBills,
+	pHouseKey1,
 
 	/* Achievements */
 	pAchievementPoints,
@@ -174,5 +175,23 @@ enum attached_object_data {
 	Float:ao_rz,
 	Float:ao_sx,
 	Float:ao_sy,
-	Float:ao_sz
+	Float:ao_sz,
+};
+
+enum house_info {
+	houseID,
+	houseOwner[24],
+	Float:houseExt[4], // XYZA
+	Float:houseInt[4], // XYZA
+	houseInterior,
+	houseVirtualWorld,
+	houseCost,
+	houseBill,
+	houseVacant,
+	houseLock,
+	houseStorage[8],
+	houseLevel,
+	Text3D:houseLabel,
+	houseIcon,
+	houseCreated,
 };

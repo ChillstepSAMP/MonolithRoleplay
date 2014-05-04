@@ -84,6 +84,12 @@ CMD:enter(playerid, params[])
 			break;
 		}
 	}
+	for(new i = 0; i < MAX_HOUSES; i++) {
+		if(IsPlayerInRangeOfPoint(playerid, 1.5, HouseInfo[i][houseExt][0], HouseInfo[i][houseExt][1], HouseInfo[i][houseExt][2])) {
+			EnterExitFunc(playerid, i, 1, TYPE_HOUSE);
+			break;
+		}
+	}
 	return 1;
 }
 
@@ -93,6 +99,13 @@ CMD:exit(playerid, params[])
 		if(IsPlayerInRangeOfPoint(playerid, 3, DoorInfo[i][dInteriorX], DoorInfo[i][dInteriorY], DoorInfo[i][dInteriorZ]) 
 			&& (GetPlayerVirtualWorld(playerid) == DoorInfo[i][dVW] && GetPlayerInterior(playerid) == DoorInfo[i][dInt])) {
 			EnterExitFunc(playerid, i, 2, TYPE_DOOR);
+			break;
+		}
+	}
+	for(new i = 0; i < MAX_HOUSES; i++) {
+		if(IsPlayerInRangeOfPoint(playerid, 1.5, HouseInfo[i][houseInt][0], HouseInfo[i][houseInt][1], HouseInfo[i][houseInt][2])
+			&& (GetPlayerVirtualWorld(playerid) == HouseInfo[i][houseVirtualWorld] && GetPlayerInterior(playerid) == HouseInfo[i][houseInterior])) {
+			EnterExitFunc(playerid, i, 2, TYPE_HOUSE);
 			break;
 		}
 	}
@@ -299,5 +312,44 @@ CMD:find(playerid, params[])
 	else {
 		SendClientMessageEx(playerid, COLOR_GREY, "You need a GPS to complete this action.");
 	}
+	return 1;
+}
+
+CMD:buyhouse(playerid, params[])
+{
+	new id;
+	for(new i = 0; i < MAX_HOUSES; i++) {
+		if(IsPlayerInRangeOfPoint(playerid, 1.5, HouseInfo[i][houseExt][0], HouseInfo[i][houseExt][1], HouseInfo[i][houseExt][2])) {
+			id = i;
+			break;
+		}
+	}
+
+	if(HouseInfo[id][houseVacant] != 0) {
+		SendClientMessageEx(playerid, COLOR_GREY, "This house is already owned.");
+		return 1;
+	}
+
+	if(PlayerInfo[playerid][pHouseKey1] != -1) {
+		SendClientMessageEx(playerid, COLOR_GREY, "You already own a house.");
+		return 1;
+	}
+
+	if(GetPVarInt(playerid, "confirmPurchase") != 1) {
+		SetPVarInt(playerid, "confirmPurchase", 1);
+		SendClientMessageEx(playerid, COLOR_GREY, "Please confirm your purchase. Note, your money must be in the bank.");
+		return 1;
+	}
+
+	if(PlayerInfo[playerid][pBankMoney] < HouseInfo[id][houseCost]) {
+		SendClientMessageEx(playerid, COLOR_GREY, "You do not have enough in the bank to afford this house.");
+		return 1;
+	}
+
+	HouseInfo[id][houseVacant] = 1;
+	PlayerInfo[playerid][pHouseKey1] = id;
+	format(HouseInfo[id][houseOwner], 24, GetPlayerNameEx(playerid,1));
+	UpdateHouseLabel(id);
+	GivePlayerBankMoney(playerid, -HouseInfo[id][houseCost]);
 	return 1;
 }

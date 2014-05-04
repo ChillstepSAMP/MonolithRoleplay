@@ -29,15 +29,15 @@ CMD:ahelp(playerid, params[]) /* Temp */
 	#define admin PlayerInfo[playerid][pStaff]
 	if(admin >= STAFF_ADMIN) {
 		if(admin >= STAFF_ADMIN) {
-			SendClientMessageEx(playerid, COLOR_GREY, "*** {0000CD}ADMIN{B4B5B7} *** /ipcheck /idcheck /freeze /unfreeze /setvw /setint");
-			SendClientMessageEx(playerid, COLOR_GREY, "*** {0000CD}ADMIN{B4B5B7} *** /goto /kick /lastused /fixveh /respawnveh /aduty");
+			SendClientMessageEx(playerid, COLOR_GREY, "*** {00FF00}ADMIN{B4B5B7} *** /ipcheck /idcheck /freeze /unfreeze /setvw /setint");
+			SendClientMessageEx(playerid, COLOR_GREY, "*** {00FF00}ADMIN{B4B5B7} *** /goto /kick /lastused /fixveh /respawnveh /aduty");
 		}
 		if(admin >= STAFF_SADMIN) {
-			SendClientMessageEx(playerid, COLOR_GREY, "*** {4C0085}SENIOR ADMIN{B4B5B7} *** /takemod /givexp /sweepvehs");
+			SendClientMessageEx(playerid, COLOR_GREY, "*** {00FF00}SENIOR ADMIN{B4B5B7} *** /takemod /givexp /sweepvehs");
 		}
 		if(admin >= STAFF_LADMIN) {
-			SendClientMessageEx(playerid, COLOR_GREY, "*** {228B22}LEAD ADMIN{B4B5B7} *** /makepmod /takestaff /createatm /editatm /createdoor /editdoor");
-			SendClientMessageEx(playerid, COLOR_GREY, "*** {228B22}LEAD ADMIN{B4B5B7} *** /skick /giveweapon");
+			SendClientMessageEx(playerid, COLOR_GREY, "*** {0000CD}LEAD ADMIN{B4B5B7} *** /makepmod /takestaff /createatm /editatm /createdoor /editdoor");
+			SendClientMessageEx(playerid, COLOR_GREY, "*** {0000CD}LEAD ADMIN{B4B5B7} *** /skick /giveweapon");
 		}
 		if(admin >= STAFF_HADMIN) {
 			SendClientMessageEx(playerid, COLOR_GREY, "*** {DC143C}HEAD ADMIN{B4B5B7} *** /makestaff /givemoney /createkey /revokekey");
@@ -682,6 +682,22 @@ CMD:goto(playerid, params[])
 	return 1;
 }
 
+CMD:gotopos(playerid, params[])
+{
+	new Float:location[3], interior; 
+	if(PlayerInfo[playerid][pStaff] >= STAFF_ADMIN) {
+		if(sscanf(params, "fffd", location[0], location[1], location[2], interior)) {
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/gotopos [x] [y] [z] [interior]");
+			return 1;
+		}
+
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}
+
 CMD:kick(playerid, params[])
 {
 	if(PlayerInfo[playerid][pStaff] >= STAFF_ADMIN || PlayerInfo[playerid][pMod] > 0)
@@ -783,10 +799,9 @@ CMD:forcepassword(playerid, params[])
 		}
 
 		/* We are not going to upset the natural balance and prompt everyone, just those logging in. */
-
 		format(query, sizeof(query), "UPDATE `server_config` SET `ForceChange`=%d WHERE `serverID` = 1", strval(params));
 		mysql_function_query(gSQLHandle, query, false, "InsertKey", "");
-		server_config_pass = strval(params);
+		SetGVarInt("serv_conf_pass", 1);
 		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You have forced a password change.");
 	
 		Log("Action.log", "%s has forced a password change to the server.", GetPlayerNameEx(playerid, 1));
@@ -1121,6 +1136,236 @@ CMD:god(playerid, params[])
 
 			SendClientMessageEx(playerid, COLOR_GREY, "God mode disabled.");
 		}
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}
+
+CMD:createhouse(playerid, params[])
+{
+	new Float:pos[4], id;
+	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
+		if(GetPVarInt(playerid, "confirmCreation") > 0) {
+			
+			for(new i = 0; i < MAX_HOUSES; i++) {
+				if(HouseInfo[i][houseExt][0] == 0.0 && HouseInfo[i][houseExt][1] == 0.0 && HouseInfo[i][houseExt][2] == 0.0) {
+					id = i;
+					break;
+				}
+			}
+
+			GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+			GetPlayerFacingAngle(playerid, pos[3]);
+			HouseInfo[id][houseExt][0] = pos[0];
+			HouseInfo[id][houseExt][1] = pos[1];
+			HouseInfo[id][houseExt][2] = pos[2];
+			HouseInfo[id][houseExt][3] = pos[3];
+			HouseInfo[id][houseCost] = 25500;
+			HouseInfo[id][houseLevel] = 999; // prevent someone buying house without interior.
+			HouseInfo[id][houseLock] = 1;
+			HouseInfo[id][houseBill] = floatround(HouseInfo[id][houseCost]*0.065); // 6.5% bill :)
+			HouseInfo[id][houseCreated] = 1;
+
+			for(new i = 0; i < 8; i++) {
+				HouseInfo[id][houseStorage][i] = -1;
+			}
+
+			UpdateHouseLabel(id, 1);
+			DeletePVar(playerid, "confirmCreation");
+
+			Log("House.log", "%s has created house id %d", GetPlayerNameEx(playerid, 1), id);
+		}
+		else {
+			SendClientMessageEx(playerid, COLOR_GREY, "Please re-type this command if you would like to create a house at your location.");
+			SetPVarInt(playerid, "confirmCreation", 1);
+		}
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}
+
+CMD:edithouse(playerid, params[])
+{
+	new option[32];
+	new ix, id;
+	new Float:pos[4];
+	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
+		if(!sscanf(params, "s[32]dI(-1)", option, id, ix)) {
+
+			if(HouseInfo[id][houseCreated] == 0) {
+				SendClientMessageEx(playerid, COLOR_GREY, "This House ID has not been created.");
+				return 1;
+			}
+
+			if(strcmpEx(option, "Exterior")) {
+				GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+				GetPlayerFacingAngle(playerid, pos[3]);
+				HouseInfo[id][houseExt][0] = pos[0];
+				HouseInfo[id][houseExt][1] = pos[1];
+				HouseInfo[id][houseExt][2] = pos[2];
+				HouseInfo[id][houseExt][3] = pos[3];
+				UpdateHouseLabel(id,1);
+			}
+			else if(strcmpEx(option, "interior")) {
+				GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+				GetPlayerFacingAngle(playerid, pos[3]);
+				HouseInfo[id][houseInt][0] = pos[0];
+				HouseInfo[id][houseInt][1] = pos[1];
+				HouseInfo[id][houseInt][2] = pos[2];
+				HouseInfo[id][houseInt][3] = pos[3];
+				HouseInfo[id][houseInterior] = GetPlayerInterior(playerid);
+				HouseInfo[id][houseVirtualWorld] = GetPlayerVirtualWorld(playerid);
+			}
+			else if(strcmpEx(option, "int")) {
+				if(ix != -1) {
+					HouseInfo[id][houseInterior] = ix;
+					UpdateHouseLabel(id);
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Invalid value.");
+					return 1;
+				}
+			}
+			else if(strcmpEx(option, "vw")) {
+				if(ix != -1) {
+					HouseInfo[id][houseVirtualWorld] = ix;
+					UpdateHouseLabel(id);
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Invalid value.");
+					return 1;
+				}
+			}
+			else if(strcmpEx(option, "bill")) {
+				if(ix != -1) {
+					HouseInfo[id][houseBill] = ix;
+					UpdateHouseLabel(id);
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Invalid value.");
+					return 1;
+				}
+			}
+			else if(strcmpEx(option, "locked")) {
+				if(ix != -1) {
+					HouseInfo[id][houseLock] = ix;
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Invalid value.");
+					return 1;
+				}	
+			}
+			else if(strcmpEx(option, "cost")) {
+				if(ix != -1) {
+					HouseInfo[id][houseCost] = ix;
+					UpdateHouseLabel(id);
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Invalid value.");
+					return 1;
+				}
+			}
+			else if(strcmpEx(option, "level")) {
+				if(ix != -1) {
+					HouseInfo[id][houseLevel] = ix;
+					UpdateHouseLabel(id);
+				}
+				else {
+					SendClientMessageEx(playerid, COLOR_GREY, "Invalid value.");
+					return 1;
+				}
+			}
+			else {
+				SendClientMessageEx(playerid, COLOR_GREY, "Invalid option.");
+				return 1;
+			}
+			Log("House.log", "%s has set %s (Optional:%d) for House ID %d", GetPlayerNameEx(playerid, 1), option, ix, id);
+			SendClientMessageEx(playerid, COLOR_WHITE, "You have set the %s.", option);
+			SaveHouse(id);
+		}
+		else {
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/edithouse <option> <house ID> <optional value>");
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Options: " COL_WHITE "Exterior, Interior, Int, VW, Bill, Locked, Cost, Level");
+		}
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}
+
+CMD:deletehouse(playerid, params[])
+{
+	new id;
+	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
+
+		if(sscanf(params, "d", id)) {
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/deletehouse <houseid>");
+			return 1;
+		}
+
+		if(GetPVarInt(playerid, "ConfirmDelete") > 0) {
+			
+			Log("House.log", "%s has deleted %s's house (HouseID:%d)", GetPlayerNameEx(playerid, 1), HouseInfo[id][houseOwner], id);
+			format(HouseInfo[id][houseOwner], 24, "None");
+			HouseInfo[id][houseExt][0] = 0;
+			HouseInfo[id][houseExt][1] = 0;
+			HouseInfo[id][houseExt][2] = 0;
+			HouseInfo[id][houseExt][3] = 0;
+			HouseInfo[id][houseCost] = 0;
+			HouseInfo[id][houseLevel] = 999; 
+			HouseInfo[id][houseLock] = 1;
+			HouseInfo[id][houseBill] = 0;
+			HouseInfo[id][houseCreated] = 0;
+
+			for(new i = 0; i < 8; i++) {
+				HouseInfo[id][houseStorage][i] = -1;
+			}
+
+			DestroyDynamicPickup(HouseInfo[id][houseIcon]);
+			DestroyDynamic3DTextLabel(HouseInfo[id][houseLabel]);
+			DeletePVar(playerid, "ConfirmDelete");
+
+
+		}
+		else {
+			SendClientMessageEx(playerid, COLOR_GREY, "Please re-type this command if you would like to delete this house.");
+			SetPVarInt(playerid, "ConfirmDelete", 1);
+		}
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}
+
+CMD:asellhouse(playerid, params[])
+{
+	new id;
+	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
+
+		if(sscanf(params, "d", id)) {
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/asellhouse <houseid>");
+			return 1;
+		}
+
+		Log("House.log", "%s has sold %s's house (HouseID:%d)", GetPlayerNameEx(playerid, 1), HouseInfo[id][houseOwner], id);
+		
+		format(HouseInfo[id][houseOwner], 24, "None");
+		HouseInfo[id][houseVacant] = 0;
+		HouseInfo[id][houseCost] = 25500;
+		HouseInfo[id][houseLevel] = 999; 
+		HouseInfo[id][houseLock] = 1;
+
+		for(new i = 0; i < 8; i++) {
+			HouseInfo[id][houseStorage][i] = -1;
+		}
+		
+		UpdateHouseLabel(id);
 	}
 	else {
 		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");

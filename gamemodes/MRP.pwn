@@ -1,5 +1,4 @@
 /*
-
 	The MIT License (MIT) - Modified
 
 	Copyright (c) 2014 Zachary Griffeth

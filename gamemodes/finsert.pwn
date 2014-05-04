@@ -26,7 +26,6 @@
 #include <a_mysql>
 #include <sscanf2>
 #include <zcmd>
-#include <cuf>
 
 #define SQL_SERVER 	"localhost"
 #define SQL_USER	"root"
@@ -45,7 +44,6 @@ public OnFilterScriptInit()
 	print(" Skyrise's Resources Library");
 	print(" MySQL Data Insertion, by Skyrise.");
 	print("--------------------------------------\n");
-	SetConsoleBackgroundColor(CONSOLE
 	return 1;
 }
 

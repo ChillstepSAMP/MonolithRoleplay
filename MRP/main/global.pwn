@@ -53,6 +53,7 @@ new
 	InfoEnum[MAX_INFOS][hEnum],
 	TowerInfo[MAX_TOWERS][towerInfo],
 	ao[MAX_PLAYERS][MAX_PLAYER_ATTACHED_OBJECTS][attached_object_data],
+	HouseInfo[MAX_HOUSES][house_info],
 
 	/* NPCS */
 	npcFrank,

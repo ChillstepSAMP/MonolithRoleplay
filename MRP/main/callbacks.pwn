@@ -52,10 +52,15 @@ public OnGameModeInit()
 	mysql_function_query(gSQLHandle, query, true, "LoadHelpInfos", "");
 	format(query, sizeof(query), "SELECT * FROM `cell_towers`");
 	mysql_function_query(gSQLHandle, query, false, "LoadTowers", "");
+	format(query, sizeof(query), "SELECT * FROM `houses`");
+	mysql_function_query(gSQLHandle, query, true, "LoadHouses", "");
 
 	ConnectNPC("Frank", "npcFrank");
 	ConnectNPC("Julio", "npcJulio");
 	ConnectNPC("Juan", "npcJuan");
+
+	// GVars //
+	SetGVarInt("serv_conf_pass", 0); // will be loaded and reset later.
 	return 1;
 }
 
@@ -76,6 +81,10 @@ public OnGameModeExit()
 	for(new i = 0; i < MAX_TOWERS; i++) {
 		if(TowerInfo[i][tPos][0] != 0.0 && TowerInfo[i][tPos][1] != 0.0 && TowerInfo[i][tPos][2] != 0.0)
 			SaveTower(i);
+	}
+	for(new i = 0; i < MAX_HOUSES; i++) {
+		if(HouseInfo[i][houseExt][0] != 0.0 && HouseInfo[i][houseExt][1] != 0.0 && HouseInfo[i][houseExt][2] != 0.0)
+			SaveHouse(i);
 	}
 	foreach(Player, i) {
 		SendClientMessageEx(i, COLOR_RED, "NOTICE: " COL_YELLOW "Server has shut down.");
@@ -299,7 +308,7 @@ public OnPlayerStateChange(playerid, newstate, oldstate)
 		if(GetVehicleModel(PlayerInfo[playerid][uLastVeh]) == 449) {
 			SetCameraBehindPlayer(playerid);
 			#if defined MRP_DEBUG 
-				print("[DEBUG] Called : %i, %i, %i", playerid, newstate, oldstate);
+				printf("[DEBUG] Called : %i, %i, %i", playerid, newstate, oldstate);
 			#endif
 		}
 	}
@@ -712,7 +721,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				case 0:
 				{
 					new info[128];
-
 					SendClientMessageEx(playerid, COLOR_ORANGE, "Note: " COL_WHITE "You have a limited withdraw amount at an ATM. Please visit a bank to withdraw more.");
 					format(info, sizeof(info), "Please enter an amount that is equal to or below $%s that you would like to withdraw:", NumFormat(ATMInfo[GetPVarInt(playerid, "UsingATMID")][aMoney]));
 					ShowPlayerDialog(playerid, DIALOG_ATM_WITHDRAW, DIALOG_STYLE_INPUT, "Withdraw Menu", info, "Okay", "Cancel");
@@ -1024,6 +1032,52 @@ public OnPlayerClickPlayer(playerid, clickedplayerid, source)
 	return 1;
 }
 
+/* 
+	****   Please Note:
+	****   Custom damage is handled in the SPC library, not here.
+	****   EDITING MIGHT CAUSE CONFLICTS AND ADD EXTRA DAMAGE.
+
+public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ) 
+{
+	return 1;
+}
+
+public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
+{
+	return 1;
+}
+
+public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart) 
+{
+	return 1;
+}*/
+
+public OnPlayerEditAttachedObject(playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ)
+{
+    if(response)
+    {
+        SendClientMessage(playerid, COLOR_YELLOW, "Attached object edition saved.");
+ 
+        ao[playerid][index][ao_x] = fOffsetX;
+        ao[playerid][index][ao_y] = fOffsetY;
+        ao[playerid][index][ao_z] = fOffsetZ;
+        ao[playerid][index][ao_rx] = fRotX;
+        ao[playerid][index][ao_ry] = fRotY;
+        ao[playerid][index][ao_rz] = fRotZ;
+        ao[playerid][index][ao_sx] = fScaleX;
+        ao[playerid][index][ao_sy] = fScaleY;
+        ao[playerid][index][ao_sz] = fScaleZ;
+    }
+    else
+    {
+        SendClientMessageEx(playerid, COLOR_YELLOW, "Attached object edition not saved.");
+ 
+        new i = index;
+        SetPlayerAttachedObject(playerid, index, modelid, boneid, ao[playerid][i][ao_x], ao[playerid][i][ao_y], ao[playerid][i][ao_z], ao[playerid][i][ao_rx], ao[playerid][i][ao_ry], ao[playerid][i][ao_rz], ao[playerid][i][ao_sx], ao[playerid][i][ao_sy], ao[playerid][i][ao_sz]);
+    }
+    return 1;
+}
+
 public KickDelay(playerid) 
 {
 	return Kick(playerid);
@@ -1100,6 +1154,7 @@ public RegisterAccount(playerid)
 		PlayerInfo[playerid][pModel] = 299;
 		PlayerInfo[playerid][pVW] = playerid+21;
 		PlayerInfo[playerid][pInt] = 0;
+		PlayerInfo[playerid][pHouseKey1] = -1;
 		LoginStatus[playerid] = 1;
 
 		SetTimerEx("EventHandler", 3000, false, "ii", playerid, EVENT_CREATION_SEX);
@@ -1133,7 +1188,7 @@ public p_AchievementHandler(playerid, type)
 			cache_get_field_content(0, "AchievementFirstFaction", fetch, gSQLHandle, MAX_INT);
 			PlayerInfo[playerid][pAchievementFirstFaction] = strval(fetch);
 			#if defined MRP_DEBUG
-				print("Loaded %s's Achievements from the database.", GetPlayerNameEx(playerid));
+				printf("Loaded %s's Achievements from the database.", GetPlayerNameEx(playerid));
 			#endif
 	    }
 	    else {
@@ -1242,6 +1297,8 @@ public LoginAccount(playerid)
 		PlayerInfo[playerid][pGPS] = strval(fetch);
 		cache_get_field_content(0, "Bills", fetch, gSQLHandle, MAX_INT);
 		PlayerInfo[playerid][pBills] = strval(fetch);
+		cache_get_field_content(0, "HouseKey1", fetch, gSQLHandle, MAX_INT);
+		PlayerInfo[playerid][pHouseKey1] = strval(fetch);
 
 		LoginStatus[playerid] = 1;
 
@@ -1328,7 +1385,7 @@ public LoginAccount(playerid)
 		PlayerInfo[playerid][uHasCompleted] = strval(fetch);
 
 		if(PlayerInfo[playerid][pCreated] != 0) {
-			if(server_config_pass && PlayerInfo[playerid][uHasCompleted] != 1) {
+			if(GetGVarInt("serv_conf_pass") == 1 && PlayerInfo[playerid][uHasCompleted] != 1) {
 				ShowPlayerDialog(playerid, DIALOG_ACMENU_PASS, DIALOG_STYLE_INPUT, "Forced Password Change", "For your security, a forced password change has been enabled.\nPlease enter a new password below: ", "Enter", "");				
 			}
 		}
@@ -1540,6 +1597,7 @@ public LoadDoors()
 			DoorInfo[i][dPickup] = CreateDynamicPickup(1239, 1, xa, ya, za);
 		}
     }
+    return 1;
 }
 
 public OnSaveDoor(i) 
@@ -1566,23 +1624,6 @@ public OnUpdateAdminName(playerid)
 	return (mysql_affected_rows(gSQLHandle)) 
 		? SendClientMessageEx(playerid, COLOR_GREEN, "Success: " COL_WHITE "Your admin name will be displayed to players as %s. You may now go on duty.", GetAdminName(playerid)) 
 		: SendClientMessageEx(playerid, COLOR_RED, "Error: " COL_WHITE "Row not affected.");
-}
-
-/* Custom damage is handled in the SPC library, not here. */
-
-public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ) 
-{
-	return 1;
-}
-
-public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
-{
-	return 1;
-}
-
-public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart) 
-{
-	return 1;
 }
 
 public LoadHelpInfos()
@@ -1615,7 +1656,7 @@ public LoadHelpInfos()
 	return 1;
 }
 
-/* eventually, this will be a handler */
+/* eventually, this will be a handler for multiple */
 public CallShowAgain(playerid, text[], time)
 {
 	ShowPlayerMessage(playerid, text, time);
@@ -1626,6 +1667,9 @@ public LoadTowers()
 {
 	new fields, rows, fetch[MAX_INT], string[128];
     cache_get_data(rows, fields, gSQLHandle);
+
+    if(!rows) return 1;
+
     for(new i = 0; i < MAX_TOWERS; i++) 
     {
     	cache_get_field_content(i, "towerID", fetch, gSQLHandle, MAX_INT);
@@ -1656,30 +1700,94 @@ public LoadTowers()
     		TowerInfo[i][towerLabel] = CreateDynamic3DTextLabel(string, COLOR_TAN, TowerInfo[i][tPos][0], TowerInfo[i][tPos][1], TowerInfo[i][tPos][2], 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, /* vw */ 0, /* int */ 0, -1, 10.0);
     	}
     }
-}
- 
-public OnPlayerEditAttachedObject(playerid, response, index, modelid, boneid, Float:fOffsetX, Float:fOffsetY, Float:fOffsetZ, Float:fRotX, Float:fRotY, Float:fRotZ, Float:fScaleX, Float:fScaleY, Float:fScaleZ)
-{
-    if(response)
-    {
-        SendClientMessage(playerid, COLOR_YELLOW, "Attached object edition saved.");
- 
-        ao[playerid][index][ao_x] = fOffsetX;
-        ao[playerid][index][ao_y] = fOffsetY;
-        ao[playerid][index][ao_z] = fOffsetZ;
-        ao[playerid][index][ao_rx] = fRotX;
-        ao[playerid][index][ao_ry] = fRotY;
-        ao[playerid][index][ao_rz] = fRotZ;
-        ao[playerid][index][ao_sx] = fScaleX;
-        ao[playerid][index][ao_sy] = fScaleY;
-        ao[playerid][index][ao_sz] = fScaleZ;
-    }
-    else
-    {
-        SendClientMessageEx(playerid, COLOR_YELLOW, "Attached object edition not saved.");
- 
-        new i = index;
-        SetPlayerAttachedObject(playerid, index, modelid, boneid, ao[playerid][i][ao_x], ao[playerid][i][ao_y], ao[playerid][i][ao_z], ao[playerid][i][ao_rx], ao[playerid][i][ao_ry], ao[playerid][i][ao_rz], ao[playerid][i][ao_sx], ao[playerid][i][ao_sy], ao[playerid][i][ao_sz]);
-    }
     return 1;
+}
+
+
+
+public LoadHouses()
+{
+	new fields, rows, fetch[128], string[128];
+    cache_get_data(rows, fields, gSQLHandle);
+   
+    for(new i = 0; i < MAX_HOUSES; i++) 
+    {
+    	cache_get_field_content(i, "houseID", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseID] = strval(fetch);
+
+    	cache_get_field_content(i, "houseOwner", HouseInfo[i][houseOwner], gSQLHandle, MAX_PLAYER_NAME);
+
+    	cache_get_field_content(i, "houseExtX", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseExt][0] = floatstr(fetch);
+    	cache_get_field_content(i, "houseExtY", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseExt][1] = floatstr(fetch);
+    	cache_get_field_content(i, "houseExtZ", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseExt][2] = floatstr(fetch);
+    	cache_get_field_content(i, "houseExtA", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseExt][3] = floatstr(fetch);
+    	cache_get_field_content(i, "houseIntX", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseInt][0] = floatstr(fetch);
+    	cache_get_field_content(i, "houseIntY", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseInt][1] = floatstr(fetch);
+    	cache_get_field_content(i, "houseIntZ", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseInt][2] = floatstr(fetch);
+    	cache_get_field_content(i, "houseIntA", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseInt][3] = floatstr(fetch);
+
+    	cache_get_field_content(i, "houseInterior", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseInterior] = strval(fetch);
+    	cache_get_field_content(i, "houseVirtualWorld", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseVirtualWorld] = strval(fetch);
+    	cache_get_field_content(i, "houseCost", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseCost] = strval(fetch);
+    	cache_get_field_content(i, "houseBill", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseBill] = strval(fetch);
+    	cache_get_field_content(i, "houseVacant", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseVacant] = strval(fetch);
+    	cache_get_field_content(i, "houseLock", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseLock] = strval(fetch);
+
+    	cache_get_field_content(i, "houseStorage1", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][0] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage2", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][1] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage3", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][2] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage4", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][3] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage5", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][4] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage6", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][5] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage7", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][6] = strval(fetch);
+    	cache_get_field_content(i, "houseStorage8", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseStorage][7] = strval(fetch);
+
+    	cache_get_field_content(i, "houseLevel", fetch, gSQLHandle, MAX_INT);
+    	HouseInfo[i][houseLevel] = strval(fetch);
+
+    	HouseInfo[i][houseCreated] = 0;
+
+    	if(HouseInfo[i][houseExt][0] != 0.0 && HouseInfo[i][houseExt][1] != 0.0 && HouseInfo[i][houseExt][2] != 0.0) {
+    		if(strcmpEx(HouseInfo[i][houseOwner], "None")) {
+    			format(string, sizeof(string), "House ID: %d\nFor Sale!\nCost: %d\nLevel: %d", 
+    				i,
+    				HouseInfo[i][houseCost],
+    				HouseInfo[i][houseLevel]
+    			);
+    		}	
+    		else {
+    			format(string, sizeof(string), "House ID: %d\nOwner: %s\nLevel: %d",
+    				i,
+    				HouseInfo[i][houseOwner],
+    				HouseInfo[i][houseLevel]
+    			);
+    		}
+    		HouseInfo[i][houseLabel] = CreateDynamic3DTextLabel(string, COLOR_GREEN, HouseInfo[i][houseExt][0], HouseInfo[i][houseExt][1]+0.1, HouseInfo[i][houseExt][2], 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, /* vw */ 0, /* int */ 0, -1, 10.0);
+			HouseInfo[i][houseIcon] = CreateDynamicPickup(1273, 1, HouseInfo[i][houseExt][0], HouseInfo[i][houseExt][1], HouseInfo[i][houseExt][2]);
+    		HouseInfo[i][houseCreated] = 1;
+    	}
+    }
+	return 1;
 }
