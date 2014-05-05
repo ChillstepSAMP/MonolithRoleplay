@@ -1256,7 +1256,7 @@ CMD:edithouse(playerid, params[])
 				HouseInfo[id][houseInt][2] = pos[2];
 				HouseInfo[id][houseInt][3] = pos[3];
 				HouseInfo[id][houseInterior] = GetPlayerInterior(playerid);
-				HouseInfo[id][houseVirtualWorld] = GetPlayerVirtualWorld(playerid);
+				HouseInfo[id][houseVirtualWorld] = id+999;
 			}
 			else if(strcmpEx(option, "int")) {
 				if(ix != -1) {

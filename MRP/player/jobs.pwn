@@ -55,6 +55,7 @@ UpdateTreeLabel(i, moved = 0)
 			DestroyDynamic3DTextLabel(label);
 		label = CreateDynamic3DTextLabel(text, COLOR_GREEN, TreeInfo[i][treePos][0], TreeInfo[i][treePos][1], TreeInfo[i][treePos][2], 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1, -1, 10.0);
 	}
+	#undef label
 	return 1;
 }
 
