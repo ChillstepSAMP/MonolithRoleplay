@@ -1339,7 +1339,7 @@ CMD:edithouse(playerid, params[])
 
 CMD:deletehouse(playerid, params[])
 {
-	new id;
+	new id, giveplayerid;
 	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
 
 		if(sscanf(params, "d", id)) {
@@ -1350,6 +1350,19 @@ CMD:deletehouse(playerid, params[])
 		if(GetPVarInt(playerid, "ConfirmDelete") > 0) {
 			
 			Log("House.log", "%s has deleted %s's house (HouseID:%d)", GetPlayerNameEx(playerid, 1), HouseInfo[id][houseOwner], id);
+
+			if(!strcmpEx(HouseInfo[id][houseOwner], "None")) {
+				sscanf(HouseInfo[id][houseOwner], "u", giveplayerid);
+				if(giveplayerid != INVALID_PLAYER_ID) {
+					PlayerInfo[giveplayerid][pHouseKey1] = -1;
+					SendClientMessageEx(playerid, COLOR_LIGHTRED, "Your house was deleted by an administrator.");
+				}
+				else {
+					format(query, sizeof(query), "UPDATE `user_accounts` SET `HouseKey1`=-1 WHERE `Username`='%s'", HouseInfo[id][houseOwner]);
+					mysql_function_query(gSQLHandle, query, false, "FinishQuery", "");
+				}
+			}
+			
 			format(HouseInfo[id][houseOwner], 24, "None");
 			HouseInfo[id][houseExt][0] = 0;
 			HouseInfo[id][houseExt][1] = 0;
@@ -1384,7 +1397,7 @@ CMD:deletehouse(playerid, params[])
 
 CMD:asellhouse(playerid, params[])
 {
-	new id;
+	new id, giveplayerid;
 	if(PlayerInfo[playerid][pStaff] >= STAFF_LADMIN) {
 
 		if(sscanf(params, "d", id)) {
@@ -1393,6 +1406,18 @@ CMD:asellhouse(playerid, params[])
 		}
 
 		Log("House.log", "%s has sold %s's house (HouseID:%d)", GetPlayerNameEx(playerid, 1), HouseInfo[id][houseOwner], id);
+
+		if(!strcmpEx(HouseInfo[id][houseOwner], "None")) {
+			sscanf(HouseInfo[id][houseOwner], "u", giveplayerid);
+			if(giveplayerid != INVALID_PLAYER_ID) {
+				PlayerInfo[giveplayerid][pHouseKey1] = -1;
+				SendClientMessageEx(playerid, COLOR_LIGHTRED, "Your house was deleted by an administrator.");
+			}
+			else {
+				format(query, sizeof(query), "UPDATE `user_accounts` SET `HouseKey1`=-1 WHERE `Username`='%s'", HouseInfo[id][houseOwner]);
+				mysql_function_query(gSQLHandle, query, false, "FinishQuery", "");
+			}
+		}
 		
 		format(HouseInfo[id][houseOwner], 24, "None");
 		HouseInfo[id][houseVacant] = 0;

@@ -534,6 +534,7 @@ EnterExitFunc(playerid, id, status, type)
 			case TYPE_BANK: {}
 		}
 	}
+	UpdatePlayerTag(playerid);
 	return 1;
 }
 
@@ -1025,4 +1026,23 @@ SaveHouse(i)
 	
 	return 1;
 	#undef h
+}
+
+UpdatePlayerTag(playerid) 
+{
+	new Float:pos[3];
+	new string[24+6];
+	DestroyDynamic3DTextLabel(PlayerInfo[playerid][nameTag]);
+	GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+	if(GetPVarInt(playerid, "AdminDuty") >= 1) {
+		format(string, sizeof(string), "%s %s", GetPlayerStaffRank(playerid), GetAdminName(playerid));
+		PlayerInfo[playerid][nameTag] = CreateDynamic3DTextLabel(string, 0x65909AFF, pos[0], pos[1], pos[2]+0.2, 
+					10.0, playerid, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld(playerid), GetPlayerInterior(playerid), -1, 10.0);
+	}
+	else {
+		format(string, sizeof(string), "%s (%d)", GetPlayerNameEx(playerid, 1), playerid);
+		PlayerInfo[playerid][nameTag] = CreateDynamic3DTextLabel(string, COLOR_WHITE, pos[0], pos[1], pos[2]+0.1, 
+			10.0, playerid, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld(playerid), GetPlayerInterior(playerid), -1, 10.0);
+	}
+	return 1;
 }
