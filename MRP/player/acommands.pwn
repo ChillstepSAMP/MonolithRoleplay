@@ -572,7 +572,7 @@ CMD:editdoor(playerid, params[])
 					SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "You did not enter a value.");
 					return 1;
 				}
-				if(value != 0 || value != 1) {
+				if(!(value == 0 || value == 1)) {
 					SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "Value for 'Status' needs to be 0 or 1.");
 					return 1;
 				} 
@@ -586,10 +586,12 @@ CMD:editdoor(playerid, params[])
 					SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "You did not enter a value.");
 					return 1;
 				}
-				if(value != 0 || value != 1) {
+				if(!(value == 0 || value == 1)) {
 					SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "Value for 'Ownable' needs to be 0 or 1.");
 					return 1;
 				}
+
+				if(value == 0) format(DoorInfo[id][dOwner], 24 "Nobody");
 				DoorInfo[id][dOwnable] = value;
 				UpdateDoorLabel(id);
 
@@ -670,7 +672,6 @@ CMD:deletedoor(playerid, params[])
 				SendClientMessageEx(playerid, COLOR_YELLOW, "Confirm: " COL_GREY "If you are sure, please type this command again.");
 				return 1;
 			}
-
 
 			Log("Door.log", "%s has deleted door ID %d.", GetAdminName(playerid), id);
 			DeletePVar(playerid, "ConfirmDelete");
@@ -1022,7 +1023,7 @@ CMD:logpoint(playerid, params[])
 		new fileStr[64], Float:pos[3];
 		new File: fileHandle = fopen("Checkpoints.thy", io_append);
 		GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
-		format(fileStr, sizeof(fileStr), "SetPlayerCheckpoint(playerid, %.2f, %.2f, %.2f, 10);\r\n", pos[0], pos[1], pos[2]);
+		format(fileStr, sizeof(fileStr), "%.2f, %.2f, %.2f\r\n", pos[0], pos[1], pos[2]);
 		fwrite(fileHandle, fileStr);
 		fclose(fileHandle);
 	}
