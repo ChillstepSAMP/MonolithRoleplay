@@ -591,7 +591,7 @@ CMD:editdoor(playerid, params[])
 					return 1;
 				}
 
-				if(value == 0) format(DoorInfo[id][dOwner], 24 "Nobody");
+				if(value == 0) format(DoorInfo[id][dOwner], 24, "Nobody");
 				DoorInfo[id][dOwnable] = value;
 				UpdateDoorLabel(id);
 
