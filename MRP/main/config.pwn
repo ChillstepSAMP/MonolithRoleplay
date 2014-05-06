@@ -25,10 +25,10 @@
 */
 
 // DEFINITIONS //
-#define SQL_SERVER 	"host"
-#define SQL_USER	"user"
-#define SQL_DB		"mrp"
-#define SQL_PASS	""
+#define SQL_SERVER  "host"
+#define SQL_USER    "user"
+#define SQL_DB      "mrp"
+#define SQL_PASS    ""
 #define SQL_DEBUG	1 // 0 - disable , 1 - enable MySQL debug.
 /* Max Sizes */
 #define MAX_INT    11
@@ -142,6 +142,7 @@ public FinishQuery() return 1;
 #define JOB_LUMBER				1
 #define JOB_MINER				2
 #define P_JOB_TRUCKER           3
+#define P_JOB_PIZZA             4
 
 // ADMIN DEFINES //
 #define STAFF_ADMIN				1

@@ -351,5 +351,9 @@ CMD:buyhouse(playerid, params[])
 	format(HouseInfo[id][houseOwner], 24, GetPlayerNameEx(playerid,1));
 	UpdateHouseLabel(id);
 	GivePlayerBankMoney(playerid, -HouseInfo[id][houseCost]);
+
+	if(PlayerInfo[playerid][pAchievementFirstHouse] == 0) {
+		AchievementHandler(playerid, A_FAMILYMAN, 5);
+	}
 	return 1;
 }

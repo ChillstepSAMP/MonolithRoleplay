@@ -152,9 +152,9 @@ public OnPlayerSpawn(playerid)
 		new string[24+6];
 		format(string, sizeof(string), "%s (%i)", GetPlayerNameEx(playerid, 1), playerid);
 		PlayerInfo[playerid][nameTag] = 
-			CreateDynamic3DTextLabel(string, COLOR_WHITE, 2795.61, -2462.44, 13.19+0.1, 10.0, playerid, INVALID_VEHICLE_ID, 0, 0, 0, -1, 10.0);
-		if(strcmpEx(GetPlayerNameEx(playerid), "Frank")) 
-		{
+			CreateDynamic3DTextLabel(string, COLOR_WHITE, 2795.61, -2462.44, 13.19+0.1, 10.0, playerid, INVALID_VEHICLE_ID, 0, GetPlayerVirtualWorld(playerid), GetPlayerInterior(playerid), -1, 10.0);
+		
+		if(strcmpEx(GetPlayerNameEx(playerid), "Frank")) {
 			SetPlayerSkin(playerid, 27);
 			SetPlayerPosEx(playerid, 2795.61, -2462.44, 13.19);
 			SetPlayerFacingAngle(playerid, 360);
@@ -165,6 +165,15 @@ public OnPlayerSpawn(playerid)
 		}
 		else if(strcmpEx(GetPlayerNameEx(playerid), "Julio")) {
 			npcJulio = playerid;
+			
+			TogglePlayerControllable(npcJulio, 0);
+			SetPlayerInteriorEx(npcJulio, 5);
+			SetPlayerVirtualWorldEx(npcJulio, 13337);
+			SetPlayerPosEx(npcJulio, 376.21, -117.27, 1001.49);
+			SetPlayerFacingAngle(npcJulio, 181.3743);
+			SetPlayerSkin(npcJulio, 155);
+			SetTimerEx("Freeze_Handler", 1000, false, "ii", npcJulio, 1);
+			UpdatePlayerTag(npcJulio);
 		}
 		else if(strcmpEx(GetPlayerNameEx(playerid), "Juan")) {
 			npcJuan = playerid;
@@ -936,8 +945,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 2:
 					{
-						GetPlayerPos(npcJulio, npcPos[0], npcPos[1], npcPos[2]);
-						SetPlayerCheckpoint(playerid, npcPos[0], npcPos[1], npcPos[2], 5);
+						SetPlayerCheckpoint(playerid, DoorInfo[8][dExteriorX], DoorInfo[8][dExteriorY], DoorInfo[8][dExteriorZ], 5);
 						SendClientMessageEx(playerid, COLOR_GREY, "You have set your checkpoint to Julios' location.");
 					}
 				}
@@ -1294,7 +1302,7 @@ public LoginAccount(playerid)
 		cache_get_field_content(0, "GPS", fetch, gSQLHandle, MAX_INT);
 		PlayerInfo[playerid][pGPS] = strval(fetch);
 		cache_get_field_content(0, "TotalPay", fetch, gSQLHandle, MAX_INT);
-		PlayerInfo[playerid][pGPS] = strval(fetch);
+		PlayerInfo[playerid][pTotalPay] = strval(fetch);
 		cache_get_field_content(0, "Bills", fetch, gSQLHandle, MAX_INT);
 		PlayerInfo[playerid][pBills] = strval(fetch);
 		cache_get_field_content(0, "HouseKey1", fetch, gSQLHandle, MAX_INT);
@@ -1323,6 +1331,10 @@ public LoginAccount(playerid)
 		PreLoadAnims(playerid);
 		LoadPlayerTextDraws(playerid);
 
+		TogglePlayerControllable(playerid, 0);
+		GameTextForPlayer(playerid, "~y~Streaming in...", 1500, 1);
+		SetTimerEx("Freeze_Handler", 1500, false, "ii", playerid, 1);
+
 		if(GetState(playerid) == STATE_DEAD && PlayerInfo[playerid][pCreated] != 0)
 		{
 			SetState(playerid, STATE_ALIVE);
@@ -1344,7 +1356,7 @@ public LoginAccount(playerid)
 		SetPlayerInterior(playerid, PlayerInfo[playerid][pInt]);
 
 		ClearChat(playerid);
-		TogglePlayerControllable(playerid, 1);
+		//TogglePlayerControllable(playerid, 1);
 
 		format(string, 128, "~w~Welcome back,~n~~r~%s~w~!", GetPlayerNameEx(playerid,1));
 		ShowPlayerMessage(playerid, string, 10);

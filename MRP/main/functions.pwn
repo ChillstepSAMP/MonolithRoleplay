@@ -143,7 +143,7 @@ BeginSaveUser(playerid)
 	`VirtualWorld` = %i,\
 	`Interior` = %i WHERE `UserID` = %i",
 		i[pStaff], i[pMod], i[pLevel], i[pXP], i[pDisabled], i[pUserIp],
-		i[pPosX], i[pPosY], i[pPosZ], i[pPosA], i[pModel], i[pVW], i[pInt], i[pUserID]);
+		i[pPosX], i[pPosY], i[pPosZ], i[pPosA], i[pModel], GetPlayerVirtualWorld(playerid), GetPlayerInterior(playerid), i[pUserID]);
 	mysql_function_query(gSQLHandle, query, false, "SaveUserAccount", "ii", playerid, 1);
 
 	format(query, sizeof(query), "UPDATE `user_accounts` SET `CharacterCreated`=%i,\
@@ -912,6 +912,7 @@ AchievementHandler(playerid, achievement, points)
 	PlayerInfo[playerid][pTDTime] = gettime()+10;
 	PlayerInfo[playerid][pAchievementPoints] += points;
 	SavePlayerAchievements(playerid);
+	SendClientMessageEx(playerid, COLOR_YELLOW, "You have earned an achievement.");
 	return 1;
 }
 
