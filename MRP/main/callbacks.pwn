@@ -1332,8 +1332,8 @@ public LoginAccount(playerid)
 		LoadPlayerTextDraws(playerid);
 
 		TogglePlayerControllable(playerid, 0);
-		GameTextForPlayer(playerid, "~y~Streaming in...", 1500, 1);
-		SetTimerEx("Freeze_Handler", 1500, false, "ii", playerid, 1);
+		GameTextForPlayer(playerid, "~y~Streaming in...", 4500, 1);
+		SetTimerEx("Freeze_Handler", 4500, false, "ii", playerid, 1);
 
 		if(GetState(playerid) == STATE_DEAD && PlayerInfo[playerid][pCreated] != 0)
 		{

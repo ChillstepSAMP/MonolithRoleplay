@@ -1,8 +1,8 @@
 /*
-		DataInsert - an official product by Zachary Griffeth
+		DataInsert and Administration
 
 		Developers
-			- Zachary Griffeth (Skyrise)
+			- Zachary Griffeth
 
 		FILE: FINSERT.PWN
 
@@ -61,8 +61,8 @@ public OnFilterScriptInit()
     //fSQLHandle = mysql_connect( SQL_SERVER, SQL_USER, SQL_DB, SQL_PASS );
     //mysql_log();
 	print("\n--------------------------------------");
-	print(" Skyrise's Resources Library");
-	print(" MySQL Data Insertion, by Skyrise.");
+	print(" Scaleta's Resources Library");
+	print(" MySQL Data Insertion, by Scaleta.");
 	print("--------------------------------------\n");
 	return 1;
 }
