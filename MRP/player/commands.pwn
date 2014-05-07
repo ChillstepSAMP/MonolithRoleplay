@@ -358,7 +358,7 @@ CMD:buyhouse(playerid, params[])
 	return 1;
 }
 
-CMD:asellhouse(playerid, params[])
+CMD:sellhouse(playerid, params[])
 {
 	if(PlayerInfo[playerid][pHouseKey1] != -1) {
 
