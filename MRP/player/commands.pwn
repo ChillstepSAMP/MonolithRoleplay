@@ -357,3 +357,39 @@ CMD:buyhouse(playerid, params[])
 	}
 	return 1;
 }
+
+CMD:asellhouse(playerid, params[])
+{
+	if(PlayerInfo[playerid][pHouseKey1] != -1) {
+
+		new id = PlayerInfo[playerid][pHouseKey1];
+		if(GetPVarInt(playerid, "ConfirmSell") != 1) {
+			SendClientMessageEx(playerid, COLOR_GREY, "Please re-type this command if you wish to sell your house for %d (55 percent).",
+				floatround(HouseInfo[id][houseCost]*0.55));
+			SendClientMessageEx(playerid, COLOR_WHITE, "Please note that anything in the house will be reset.");
+			SetPVarInt(playerid, "ConfirmSell", 1);
+			return 1;
+		}
+
+		Log("House.log", "%s has sold their house for %d (HouseID:%d)", GetPlayerNameEx(playerid, 1), floatround(HouseInfo[id][houseCost]*0.55), id);
+
+		GivePlayerBankMoney(playerid, floatround(HouseInfo[id][houseCost]*0.55));
+		PlayerInfo[playerid][pHouseKey1] = -1;
+		format(HouseInfo[id][houseOwner], 24, "None");
+		HouseInfo[id][houseVacant] = 0;
+		HouseInfo[id][houseCost] = 25500;
+		HouseInfo[id][houseLevel] = 999; 
+		HouseInfo[id][houseLock] = 1;
+
+		for(new i = 0; i < 8; i++) {
+			HouseInfo[id][houseStorage][i] = -1;
+		}
+		
+		UpdateHouseLabel(id);
+		DeletePVar(playerid, "ConfirmSell");
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_GREY, "You do not own a house to sell.");
+	}
+	return 1;
+}
