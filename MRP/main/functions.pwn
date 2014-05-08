@@ -1060,7 +1060,7 @@ ShowStats(playerid, giveplayerid, dialog=0)
 		else if(PlayerInfo[giveplayerid][pJob] == P_JOB_TRUCKER) format(job, 16, "Trucker");
 		else if(PlayerInfo[giveplayerid][pJob] == P_JOB_PIZZA) format(job, 16, "Pizza Boy");
 
-		SendClientMessageEx(playerid, COLOR_GREEN, "__________STATS__________");
+		SendClientMessageEx(playerid, COLOR_GREEN, "_________________________STATS_________________________");
 
 		format(string, sizeof(string), "Name:[%s] | Staff:[%s] | Developer:[%s] | Level:[%d] | Experience:[%d]", 
 			GetPlayerNameEx(giveplayerid,1), GetPlayerStaffRank(giveplayerid), 
@@ -1092,7 +1092,33 @@ ShowStats(playerid, giveplayerid, dialog=0)
 		);
 		SendClientMessageEx(playerid, COLOR_WHITE, string);
 		
-		SendClientMessageEx(playerid, COLOR_GREEN, "_________________________");
+		SendClientMessageEx(playerid, COLOR_GREEN, "_______________________________________________________");
 	}
+	return 1;
+}
+
+ShowAchievements(playerid, giveplayerid)
+{
+	new info[256];
+	format(info, sizeof(info), COL_WHITE "Name: " COL_ORANGE " %s\n\
+		" COL_WHITE "Achievements Points: " COL_GOLDENROD "%d\n\n" COL_WHITE "\
+		Risk Taker: %s\n\
+		RichMcRich: %s\n\
+		First Car: %s\n\
+		First Business: %s\n\
+		First House: %s\n\
+		First Faction: %s\n\
+		Meet and Greet: %s", 
+		GetPlayerNameEx(giveplayerid, 1), 
+		PlayerInfo[giveplayerid][pAchievementPoints],
+		(PlayerInfo[giveplayerid][pAchievementRiskTaker] == 1) ? ("Yes") : ("No"), 
+		(PlayerInfo[giveplayerid][pAchievementRichMcRich] == 1) ? ("Yes") : ("No"),
+		(PlayerInfo[giveplayerid][pAchievementFirstCar] == 1) ? ("Yes") : ("No"),
+		(PlayerInfo[giveplayerid][pAchievementFirstBiz] == 1) ? ("Yes") : ("No"),
+		(PlayerInfo[giveplayerid][pAchievementFirstHouse] == 1) ? ("Yes") : ("No"),
+		(PlayerInfo[giveplayerid][pAchievementFirstFaction] == 1) ? ("Yes") : ("No"),
+		(PlayerInfo[giveplayerid][pAchievementMeetAndGreet] == 1) ? ("Yes") : ("No")
+	);
+	ShowPlayerDialog(playerid, DIALOG_BLANK, DIALOG_STYLE_MSGBOX, "Achievements", info, "Ok", "");
 	return 1;
 }

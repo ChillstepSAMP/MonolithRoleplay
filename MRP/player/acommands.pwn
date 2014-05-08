@@ -1453,3 +1453,24 @@ CMD:check(playerid, params[])
 	}
 	return 1;
 }
+
+CMD:checkachievements(playerid, params[])
+{
+	new giveplayerid;
+	if(PlayerInfo[playerid][pStaff] >= STAFF_ADMIN) {
+		if(!sscanf(params, "u", giveplayerid)) {
+
+			if(!IsPlayerConnected(giveplayerid)) 
+				return SendClientMessageEx(playerid, COLOR_GREY, "That player is not connected.");
+				
+			ShowAchievements(playerid, giveplayerid);
+		}
+		else {
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/checkachievements <playerid>");
+		}
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}

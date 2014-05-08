@@ -351,6 +351,7 @@ CMD:buyhouse(playerid, params[])
 	format(HouseInfo[id][houseOwner], 24, GetPlayerNameEx(playerid,1));
 	UpdateHouseLabel(id);
 	GivePlayerBankMoney(playerid, -HouseInfo[id][houseCost]);
+	SendClientMessageEx(playerid, COLOR_YELLOW, "Congratulations on your purchase.");
 
 	if(PlayerInfo[playerid][pAchievementFirstHouse] == 0) {
 		AchievementHandler(playerid, A_FAMILYMAN, 5);
@@ -387,6 +388,7 @@ CMD:sellhouse(playerid, params[])
 		
 		UpdateHouseLabel(id);
 		DeletePVar(playerid, "ConfirmSell");
+		SendClientMessageEx(playerid, COLOR_YELLOW, "Your house has been sold.");
 	}
 	else {
 		SendClientMessageEx(playerid, COLOR_GREY, "You do not own a house to sell.");
@@ -397,5 +399,11 @@ CMD:sellhouse(playerid, params[])
 CMD:stats(playerid, params[])
 {
 	ShowStats(playerid, playerid);
+	return 1;
+}
+
+CMD:achievements(playerid, params[])
+{
+	ShowAchievements(playerid, playerid);
 	return 1;
 }
