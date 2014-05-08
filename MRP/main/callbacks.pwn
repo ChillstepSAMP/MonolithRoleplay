@@ -1265,11 +1265,15 @@ public LoginAccount(playerid)
 		
 		cache_get_field_content(0, "Health", fetch, gSQLHandle, MAX_INT);
 		PlayerInfo[playerid][pHealth] = floatstr(fetch);
+		SetPVarFloat(playerid, "playerHealth", PlayerInfo[playerid][pHealth]);
 		cache_get_field_content(0, "Armour", fetch, gSQLHandle, MAX_INT);
 		PlayerInfo[playerid][pArmour] = floatstr(fetch);
-		SetPVarFloat(playerid, "playerHealth", PlayerInfo[playerid][pHealth]);
 		SetPVarFloat(playerid, "playerArmour", PlayerInfo[playerid][pArmour]);
-		
+
+		cache_get_field_content(0, "Sex", fetch, gSQLHandle, MAX_INT); 
+		PlayerInfo[playerid][pSex] = strval(fetch);
+		cache_get_field_content(0, "ACLock", fetch, gSQLHandle, MAX_INT); 
+		PlayerInfo[playerid][pACLock] = strval(fetch);
 		cache_get_field_content(0, "MoneyOnHand", fetch, gSQLHandle, MAX_INT); 
 		PlayerInfo[playerid][pMoneyOnHand] = strval(fetch);
 		cache_get_field_content(0, "BankMoney", fetch, gSQLHandle, MAX_INT);
