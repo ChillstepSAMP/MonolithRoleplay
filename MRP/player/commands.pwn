@@ -393,3 +393,9 @@ CMD:sellhouse(playerid, params[])
 	}
 	return 1;
 }
+
+CMD:stats(playerid, params[])
+{
+	ShowStats(playerid, playerid);
+	return 1;
+}

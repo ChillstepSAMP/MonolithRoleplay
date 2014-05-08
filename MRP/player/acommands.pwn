@@ -1436,3 +1436,20 @@ CMD:asellhouse(playerid, params[])
 	}
 	return 1;
 }
+
+CMD:check(playerid, params[])
+{
+	new giveplayerid;
+	if(PlayerInfo[playerid][pStaff] >= STAFF_ADMIN) {
+		if(!sscanf(params, "u", giveplayerid)) {
+			ShowStats(playerid, giveplayerid);
+		}
+		else {
+			SendClientMessageEx(playerid, COLOR_ORANGE, "Usage: " COL_WHITE "/check <playerid>");
+		}
+	}
+	else {
+		SendClientMessageEx(playerid, COLOR_RED, "Notice: " COL_WHITE "You are not authorized to use this command!");
+	}
+	return 1;
+}

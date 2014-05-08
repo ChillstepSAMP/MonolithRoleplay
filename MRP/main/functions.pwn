@@ -1047,3 +1047,52 @@ UpdatePlayerTag(playerid)
 	}
 	return 1;
 }
+
+ShowStats(playerid, giveplayerid, dialog=0)
+{
+	if(!dialog) {
+
+		new string[128];
+
+		new job[12];
+		if(PlayerInfo[giveplayerid][pJob] == JOB_LUMBER) format(job, 16, "Lumberjack");
+		else if(PlayerInfo[giveplayerid][pJob] == JOB_MINER) format(job, 16, "Miner");
+		else if(PlayerInfo[giveplayerid][pJob] == P_JOB_TRUCKER) format(job, 16, "Trucker");
+		else if(PlayerInfo[giveplayerid][pJob] == P_JOB_PIZZA) format(job, 16, "Pizza Boy");
+
+		SendClientMessageEx(playerid, COLOR_GREEN, "__________STATS__________");
+
+		format(string, sizeof(string), "Name:[%s] | Staff:[%s] | Developer:[%s] | Level:[%d] | Experience:[%d]", 
+			GetPlayerNameEx(giveplayerid,1), GetPlayerStaffRank(giveplayerid), 
+			GetPlayerStaffRank(giveplayerid,1), PlayerInfo[giveplayerid][pLevel],
+			PlayerInfo[giveplayerid][pXP]
+		);
+		SendClientMessageEx(playerid, COLOR_WHITE, string);
+
+		format(string, sizeof(string), "Skin:[%d] | VirtualWorld:[%d] | Interior:[%d] | Sex:[%s] | AccountLocked:[%s]",
+			PlayerInfo[giveplayerid][pModel], PlayerInfo[giveplayerid][pVW],
+			PlayerInfo[giveplayerid][pInt],
+			(PlayerInfo[giveplayerid][pSex] == 1) ? ("Male") : ("Female"),
+			(PlayerInfo[giveplayerid][pACLock] == 1) ? ("Locked") : ("Unlocked")
+		);
+		SendClientMessageEx(playerid, COLOR_WHITE, string);
+
+		format(string, sizeof(string), "Total Money:[%s] | Bank:[%s] | Cash:[%s] | Prisoned:[%d] | Prison Time:[%d]",
+			NumFormat((PlayerInfo[giveplayerid][pBankMoney] + PlayerInfo[giveplayerid][pMoneyOnHand])),
+			NumFormat(PlayerInfo[giveplayerid][pBankMoney]), NumFormat(PlayerInfo[giveplayerid][pMoneyOnHand]),
+			PlayerInfo[giveplayerid][pPrisoned], PlayerInfo[giveplayerid][pPrisonTime]
+		);
+		SendClientMessageEx(playerid, COLOR_WHITE, string);
+
+		format(string, sizeof(string), "Job:[%s] | VIP:[%s] | Accent:[%s] | ACBanned:[%s] | GPS:[%s]",
+			job, GetPlayerVIPStatus(giveplayerid),
+			PlayerInfo[giveplayerid][pAccent],
+			(PlayerInfo[giveplayerid][pACBanned] == 1) ? ("Yes") : ("No"),
+			(PlayerInfo[giveplayerid][pGPS] == 1) ? ("Yes") : ("No")
+		);
+		SendClientMessageEx(playerid, COLOR_WHITE, string);
+		
+		SendClientMessageEx(playerid, COLOR_GREEN, "_________________________");
+	}
+	return 1;
+}
